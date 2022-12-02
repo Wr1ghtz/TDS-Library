@@ -21,8 +21,6 @@
   local isfolder = isfolder or syn_isfolder or is_folder
   local makefolder = makefolder or make_folder or createfolder or create_folder
   --//
-
-  local DropIndex = 9999
   
   function Utilities:Create(Inst, Properties, Childs)
   local Instance = Instance.new(Inst)
@@ -51,12 +49,6 @@
   
   return Instance
   end
-
-  function Utilities:Round(Number, Increment)
-    Increment = 1 / Increment
-
-    return math.round(Number * Increment) / Increment
-end
   
   function Utilities:Tween(Inst, Speed, Properties, Style, Direction)
   local Instance = Inst or error("#1 argument: instance expected.")
@@ -151,7 +143,7 @@ end
               AnchorPoint = Vector2.new(.5, 1),
               Position = UDim2.new(.5, 0, 1, 0),
               BackgroundColor3 = Colors.Secondary,
-              ZIndex = DropIndex + 5
+              ZIndex = 4
           }, {
               Utilities:Create("Frame", {
                   Name = "Divider",
@@ -159,7 +151,7 @@ end
                   AnchorPoint = Vector2.new(.5, 0),
                   BackgroundColor3 = Colors.Divider,
                   Position = UDim2.new(.5, 0, 0, 0),
-                  ZIndex = DropIndex + 5
+                  ZIndex = 4
               }),
               Utilities:Create("ImageLabel", {
                 Name = "ResizeIcon",
@@ -168,13 +160,13 @@ end
                 Image = getcustomasset("PPHUD/Resize.png"),
                 AnchorPoint = Vector2.new(1, 1),
                 Position = UDim2.new(1, 0, 1, 0),
-                ZIndex = DropIndex + 5
+                ZIndex = 4
               }, {
                 Utilities:Create("TextButton", {
                     Name = "ResizeButton",
                     Size = UDim2.new(0, 10, 0, 10),
                     BackgroundTransparency = 1,
-                    ZIndex = DropIndex + 5
+                    ZIndex = 4
                 })
               }),
               Utilities:Create("TextLabel", {
@@ -183,20 +175,11 @@ end
                   Size = UDim2.new(1, -10, 0, 24),
                   BackgroundTransparency = 1,
                   Position = UDim2.new(0, 8, 0, 0),
-                  RichText = true,
                   TextXAlignment = Enum.TextXAlignment.Left,
                   TextSize = 13,
                   Font = Enum.Font.SourceSansBold,
                   TextColor3 = Colors.PrimaryText,
-                  ZIndex = DropIndex + 5
-              }, {
-                Utilities:Create("TextButton", {
-                    Name = "CloseConsole",
-                    BackgroundTransparency = 1,
-                    Text = "",
-                    Size = UDim2.new(1, -10, 0, 24),
-                    ZIndex = 11001
-                })
+                  ZIndex = 4
               })
           }),
           Utilities:Create("Frame", {
@@ -227,123 +210,6 @@ end
           })
       })
   })
-
-  UserInputService.InputBegan:Connect(function(Input, GameProcessed)
-    if Input.KeyCode == Enum.KeyCode.LeftAlt and not GameProcessed then
-        Window.Main.Visible = not Window.Main.Visible
-    end
-  end)
-
-  local Console = Utilities:Create("Frame", {
-    Name = "Console",
-    Size = UDim2.new(0, 500, 0, 300),
-    Parent = Window.Main,
-    AnchorPoint = Vector2.new(.5, .5),
-    Visible = false,
-    ZIndex = 11000,
-    Position = UDim2.fromScale(.5, .5),
-    BackgroundColor3 = Colors.Primary
-  }, {
-    Utilities:Create("UIStroke", {
-        Color = Colors.Divider
-    }),
-    Utilities:Create("ScrollingFrame", {
-        Name = "ConsoleContainer",
-        Size = UDim2.new(0, 500, 0, 276),
-        CanvasSize = UDim2.new(0, 0, 0, 0),
-        AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        Position = UDim2.new(0, 0, 0, 24),
-        ScrollBarThickness = 0,
-        BackgroundTransparency = 1,
-        ZIndex = 11001
-    }, {
-        Utilities:Create("UIListLayout")
-    }),
-    Utilities:Create("Frame", {
-        Name = "ConsoleTopbar", 
-        AnchorPoint = Vector2.new(.5, 0),
-        Position = UDim2.new(.5, 0, 0, 0),
-        BackgroundColor3 = Colors.Secondary,
-        ZIndex = 11001,
-        Size = UDim2.new(1, 0, 0, 24)
-    }, {
-        Utilities:Create("TextLabel", {
-            Name = "ConsoleText",
-            Text = "Console",
-            Size = UDim2.new(1, -10, 0, 24),
-            BackgroundTransparency = 1,
-            Position = UDim2.new(0, 8, 0, 0),
-            RichText = true,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            TextSize = 13,
-            Font = Enum.Font.SourceSansBold,
-            TextColor3 = Colors.PrimaryText,
-            ZIndex = 11001
-        })
-    })
-  })
-
-  local consoleContainer = Console.ConsoleContainer
-
-  local scrollSize
-  consoleContainer.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    scrollSize = consoleContainer.UIListLayout.AbsoluteContentSize.Y
-
-    consoleContainer.CanvasPosition = Vector2.new(0, scrollSize)
-  end)
-
-  local bottomText = Window.Main.Bottom.BottomText
-
-  bottomText.MouseEnter:Connect(function()
-    Utilities:Tween(bottomText, .125, {TextColor3 = Colors.Accent})
-  end)
-
-  bottomText.MouseLeave:Connect(function()
-    Utilities:Tween(bottomText, .125, {TextColor3 = Colors.PrimaryText})
-  end)
-
-  bottomText.CloseConsole.MouseButton1Click:Connect(function()
-    WindowTable:ToggleConsole()
-  end)
-
-  function WindowTable:ToggleConsole()
-    Console.Visible = not Console.Visible
-  end
-
-  local coloredMessage = true
-  function WindowTable:Message(consoleArgs)
-    consoleArgs.Text = consoleArgs.Text or "Message"
-    consoleArgs.Color = consoleArgs.Color or Colors.PrimaryText
-
-    coloredMessage = not coloredMessage
-
-    local currentDate = os.date("%X")
-
-    local finalMessage = string.format("[%s] %s", currentDate, consoleArgs.Text)
-
-    local Message = Utilities:Create("Frame", {
-        Name = "ConsoleMessage",
-        BackgroundColor3 = Colors.Divider,
-        BackgroundTransparency = coloredMessage and 0 or 1,
-        Size = UDim2.new(0, 500, 0, 23),
-        ZIndex = 11002,
-        Parent = Console.ConsoleContainer
-    }, {
-        Utilities:Create("TextLabel", {
-            Name = "MessageText",
-            Text = finalMessage,
-            Size = UDim2.new(1, 0, 0, 23),
-            BackgroundTransparency = 1,
-            Position = UDim2.new(0, 3, 0, 0),
-            RichText = true,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            TextSize = 13,
-            Font = Enum.Font.SourceSansBold,
-            TextColor3 = consoleArgs.Color,
-            ZIndex = 11002
-        })
-    })
-  end
 
   if syn.protect_gui then
     syn.protect_gui(Window)
@@ -478,7 +344,6 @@ end
           BackgroundTransparency = 1,
           Size = UDim2.new(1, 0, 1, 0),
           Text = TabArgs.Text,
-          RichText = true,
           Font = Enum.Font.SourceSansBold,
           TextColor3 = Colors.SecondaryText,
           TextSize = 14,
@@ -607,7 +472,6 @@ end
           TextSize = 14,
           BackgroundTransparency = 1,
           TextColor3 = Colors.PrimaryText,
-          RichText = true,
           Font = Enum.Font.SourceSansBold,
           ZIndex = 2
       }),
@@ -676,7 +540,6 @@ end
             Name = "CheckText",
             Text = CheckArgs.Text,
             TextSize = 13,
-            RichText = true,
             Font = Enum.Font.SourceSansBold,
             Size = UDim2.new(0, 14, 0, 14),
             TextXAlignment = Enum.TextXAlignment.Left,
@@ -765,7 +628,6 @@ end
             Name = "ButtonText",
             Size = UDim2.new(1, 0, 1, 0),
             Text = Info.Text,
-            RichText = true,
             Font = Enum.Font.SourceSansBold,
             BackgroundTransparency = 1,
             TextSize = 13,
@@ -823,31 +685,16 @@ end
   Info.Default = Info.Default or 10
   Info.Minimum = Info.Minimum or 5
   Info.Maximum = Info.Maximum or 20
-  Info.Incrementation = Info.Incrementation or 1
   Info.Postfix = Info.Postfix or ""
   Info.Callback = Info.Callback or function() end
 
   if Info.Minimum > Info.Maximum then
-    local ValueBefore = Info.Minimum
-    Info.Minimum, Info.Maximum = Info.Maximum, ValueBefore
-    end
-
-    local DefaultValue = math.clamp(Info.Default, Info.Minimum, Info.Maximum)
-    local Rounded = Utilities:Round(DefaultValue, Info.Incrementation)
-
-    local DefaultScale = (Rounded - Info.Minimum) / (Info.Maximum - Info.Minimum)
-
-    local StepFormat = "%d"
-    local Step = Info.Incrementation
-
-    for i = 1, 10 do
-        if Step == 1 then break end
-        
-        StepFormat = '%.' .. i .. 'f'
-        if StepFormat:format(Step) == tostring(Step) then
-            break
-        end
-    end
+  local ValueBefore = Info.Minimum
+  Info.Minimum, Info.Maximum = Info.Maximum, ValueBefore
+  end
+    
+  Info.Default = math.clamp(Info.Default, Info.Minimum, Info.Maximum)
+  local DefaultScale = (Info.Default - Info.Minimum) / (Info.Maximum - Info.Minimum)
 
   local Slider = Utilities:Create("Frame", {
     Name = "Slider",
@@ -866,14 +713,13 @@ end
         Utilities:Create("Frame", {
             Name = "SliderInner",
             BackgroundColor3 = Colors.DarkerAccent,
-            Size = UDim2.fromScale(DefaultScale, 1)
+            Size = UDim2.new(DefaultScale, 0, 0, 14)
         }),
         Utilities:Create("TextLabel", {
             Name = "SliderValueText",
-            Text = StepFormat:format(Rounded)..Info.Postfix,
+            Text = tostring(Info.Default)..Info.Postfix,
             TextSize = 13,
             Font = Enum.Font.SourceSansBold,
-            RichText = true,
             Size = UDim2.new(1, 0, 0, 14),
             TextColor3 = Color3.fromRGB(255, 255, 255),
             BackgroundTransparency = 1
@@ -888,7 +734,6 @@ end
             Text = Info.Text,
             TextSize = 13,
             Font = Enum.Font.SourceSansBold,
-            RichText = true,
             Size = UDim2.new(1, 0, 0, 14),
             TextXAlignment = Enum.TextXAlignment.Left,
             Position = UDim2.new(1, 6, 0, 0),
@@ -923,33 +768,37 @@ end
   end)
 
   local MinSize = 0
-    local MaxSize = 1
+local MaxSize = 1
 
-    local SizeFromScale = (MinSize +  (MaxSize - MinSize)) * DefaultScale
+local SizeFromScale = (MinSize +  (MaxSize - MinSize)) * DefaultScale
+SizeFromScale = SizeFromScale - (SizeFromScale % 2)
+
+local function HandleSlider()
+    local Px = Utilities:GetXY(Slider.SliderOuter)
+    SizeFromScale = (MinSize +  (MaxSize - MinSize)) * Px
+    local Value = math.floor(Info.Minimum + ((Info.Maximum - Info.Minimum) * Px))
     SizeFromScale = SizeFromScale - (SizeFromScale % 2)
+    TweenService:Create(Slider.SliderOuter.SliderInner, TweenInfo.new(0.09, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {Size = UDim2.new(Px,0,0,14)}):Play()
+    if Info.Flag then
+        library.Flags[Info.Flag] = Value
+    end
+    Slider.SliderOuter.SliderValueText.Text = tostring(Value)..Info.Postfix
+    task.spawn(Info.Callback, Value)
+end
 
-    Slider.SliderOuter.SliderButton.MouseButton1Down:Connect(function()
-        local MouseMove, MouseKill
-        MouseMove = Mouse.Move:Connect(function()
-            local Px = Utilities:GetXY(Slider.SliderOuter)
-            local ScaledValue = Px * (Info.Maximum - Info.Minimum) + Info.Minimum
-            local RoundedValue = Utilities:Round(ScaledValue, Info.Incrementation)
-            local FinalValue = math.clamp(RoundedValue, Info.Minimum, Info.Maximum)
-            local SizeX = (FinalValue - Info.Minimum) / (Info.Maximum - Info.Minimum)
-            Utilities:Tween(Slider.SliderOuter.SliderInner, 0.09, {Size = UDim2.new(SizeX,0,1,0)})
-            if Info.Flag then
-                library.Flags[Info.Flag] = FinalValue
-            end
-            Slider.SliderOuter.SliderValueText.Text = StepFormat:format(FinalValue)..Info.Postfix
-            task.spawn(Info.Callback, FinalValue)
-        end)
-        MouseKill = UserInputService.InputEnded:Connect(function(UserInput)
-            if UserInput.UserInputType == Enum.UserInputType.MouseButton1 then
-                MouseMove:Disconnect()
-                MouseKill:Disconnect()
-            end
-        end)
-    end)
+Slider.SliderOuter.SliderButton.MouseButton1Down:Connect(function()
+	local MouseMove, MouseKill
+    HandleSlider()
+	MouseMove = Mouse.Move:Connect(function()
+		HandleSlider()
+	end)
+	MouseKill = UserInputService.InputEnded:Connect(function(UserInput)
+		if UserInput.UserInputType == Enum.UserInputType.MouseButton1 then
+			MouseMove:Disconnect()
+			MouseKill:Disconnect()
+		end
+	end)
+end)
   end
 
   function SectionTable:Label(Info)
@@ -968,7 +817,6 @@ end
             Name = "LabelText",
             Text = Info.Text,
             TextColor3 = Info.Color,
-            RichText = true,
             BackgroundTransparency = 1,
             Size = UDim2.new(0, 286, 0, 14),
             TextXAlignment = Enum.TextXAlignment.Left,
@@ -991,7 +839,6 @@ end
   function SectionTable:Dropdown(Info)
     Info.Text = Info.Text or "Dropdown"
     Info.Flag = Info.Flag or nil
-    Info.Multi = Info.Multi or false
     Info.Default = Info.Default or nil
     Info.List = Info.List or {}
     Info.ChangeText = Info.ChangeText or true
@@ -999,7 +846,6 @@ end
     local State = false
 
     local DropdownTable = {}
-    DropdownTable.Index = DropIndex
     local DropdownY = 0
 
     local Dropdown = Utilities:Create("Frame", {
@@ -1012,8 +858,7 @@ end
             Name = "DropdownFrame",
             Size = UDim2.new(.6, 3, 0, 14),
             BackgroundColor3 = Colors.Secondary,
-            ClipsDescendants = true,
-            ZIndex = DropdownTable.Index
+            ZIndex = 2
         }, {
             Utilities:Create("UIStroke", {
                 Color = Colors.AccentDivider
@@ -1024,18 +869,17 @@ end
                 Text = Info.Text,
                 Size = UDim2.new(1, 0, 0, 14),
                 TextXAlignment = Enum.TextXAlignment.Left,
-                RichText = true,
                 Position = UDim2.new(0, 4, 0, 0),
                 TextSize = 13,
                 TextColor3 = Colors.TertiaryText,
                 Font = Enum.Font.SourceSansBold,
-                ZIndex = DropdownTable.Index
+                ZIndex = 2
             }),
             Utilities:Create("TextButton", {
                 Name = "DropdownButton",
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, 0, 0, 14),
-                ZIndex = DropdownTable.Index
+                ZIndex = 2
             }),
             Utilities:Create("Frame", {
                 Name = "DropdownContainer",
@@ -1043,34 +887,16 @@ end
                 BackgroundTransparency = 1,
                 ClipsDescendants = true,
                 Position = UDim2.new(0, 0, 0, 14),
-                ZIndex = DropdownTable.Index
+                ZIndex = 2
             }, {
                 Utilities:Create("UIListLayout")
-            }),
-            Utilities:Create("Frame", {
-                Name = "GradientHolder",
-                Size = UDim2.new(0, 20, 0, 14),
-                BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                Position = UDim2.new(1, -41, 0, 0),
-                ZIndex = DropdownTable.Index
-            }, {
-                Utilities:Create("UIGradient", {
-                    Color = ColorSequence.new({
-                        ColorSequenceKeypoint.new(0, Colors.Secondary),
-                        ColorSequenceKeypoint.new(1, Colors.Secondary),
-                    }),
-                    Transparency = NumberSequence.new({
-                        NumberSequenceKeypoint.new(0, 1),
-                        NumberSequenceKeypoint.new(1, 0),
-                    })
-                })
             }),
             Utilities:Create("Frame", {
                 Name = "DropdownImageContainer",
                 Size = UDim2.new(0, 21, 0, 14),
                 BackgroundColor3 = Colors.Tertiary,
                 Position = UDim2.new(1, -21, 0, 0),
-                ZIndex = DropdownTable.Index
+                ZIndex = 2
             }, {
                 Utilities:Create("UIStroke", {
                     Color = Colors.AccentDivider
@@ -1083,7 +909,7 @@ end
                     Image = getcustomasset("PPHUD/Arrow.png"),
                     AnchorPoint = Vector2.new(.5, .5),
                     Position = UDim2.new(.5, 0, .5, 0),
-                    ZIndex = DropdownTable.Index
+                    ZIndex = 2
                 })
             })
         })
@@ -1134,81 +960,15 @@ end
         end
     end
 
-    function DropdownTable:Select(v)
-        task.spawn(Info.Callback, v)
-
-        if Info.ChangeText then
-            Dropdown.DropdownFrame.DropdownText.Text = v
-        end
-    end
-
-    local MultiTable = {}
-
-    local function OnPick(v)
-        if Info.Multi then
-            if not table.find(MultiTable, v.DropdownElementText.Text) then
-                Utilities:Tween(v, .125, {BackgroundTransparency = .95})
-                Utilities:Tween(v.DropdownElementText, .125, {TextColor3 = Colors.Accent})
-                table.insert(MultiTable, v.DropdownElementText.Text)
-            else
-                Utilities:Tween(v, .125, {BackgroundTransparency = 1})
-                Utilities:Tween(v.DropdownElementText, .125, {TextColor3 = Colors.PrimaryText})
-                for i, e in pairs(MultiTable) do
-                    if v.DropdownElementText.Text == e then
-                        table.remove(MultiTable, i)
-                    end
-                end
-            end
-            task.spawn(Info.Callback, MultiTable)
-
-            if Info.ChangeText then
-                Dropdown.DropdownFrame.DropdownText.Text = ""
-                for i, z in pairs(MultiTable) do
-                    Dropdown.DropdownFrame.DropdownText.Text ..= i ~= #MultiTable and z..", " or z
-                end
-                if string.len(Dropdown.DropdownFrame.DropdownText.Text) == 0 then
-                    Dropdown.DropdownFrame.DropdownText.Text = Info.Text
-                end
-            end
-        else
-            DropdownTable:Select(v.DropdownElementText.Text)
-            DropdownTable:Toggle(false)
-        end
-    end
-
-    function DropdownTable:Refresh(table)
-        for _, v in pairs(DropdownContainer:GetChildren()) do
-            if v.ClassName == "Frame" then
-                v:Destroy()
-                DropdownY = DropdownY - 14
-
-                if State then
-                    DropdownContainer.Size = DropdownContainer.Size - UDim2.fromOffset(0, 14)
-                    Dropdown.DropdownFrame.Size = Dropdown.DropdownFrame.Size - UDim2.fromOffset(0, 14)
-                end
-            end
-        end
-
-        for _, v in pairs(table) do
-            warn("Set", v)
-            DropdownTable:Add(v)
-        end
-    end
-
     function DropdownTable:Add(str)
         DropdownY = DropdownY + 14
-
-        if State then
-            DropdownContainer.Size = DropdownContainer.Size + UDim2.fromOffset(0, 14)
-            Dropdown.DropdownFrame.Size = Dropdown.DropdownFrame.Size + UDim2.fromOffset(0, 14)
-        end
 
         local DropdownElement = Utilities:Create("Frame", {
             Name = "DropdownElement",
             Size = UDim2.new(1, 0, 0, 14),
             Parent = DropdownContainer,
             BackgroundTransparency = 1,
-            ZIndex = DropdownTable.Index
+            ZIndex = 3
         }, {
             Utilities:Create("TextLabel", {
                 Name = "DropdownElementText",
@@ -1216,35 +976,38 @@ end
                 Size = UDim2.new(1, 0, 1, 0),
                 TextSize = 13,
                 BackgroundTransparency = 1,
-                RichText = true,
                 TextColor3 = Colors.PrimaryText,
                 Font = Enum.Font.SourceSansBold,
-                ZIndex = DropdownTable.Index
+                ZIndex = 3
             }),
             Utilities:Create("TextButton", {
                 Name = "DropdownElementButton",
                 Size = UDim2.new(1, 0, 1, 0),
                 BackgroundTransparency = 1,
-                ZIndex = DropdownTable.Index
+                ZIndex = 3
             })
         })
 
         DropdownElement.MouseEnter:Connect(function()
-            if not table.find(MultiTable, DropdownElement.DropdownElementText.Text) then
-                Utilities:Tween(DropdownElement, .125, {BackgroundTransparency = .95})
-                Utilities:Tween(DropdownElement.DropdownElementText, .125, {TextColor3 = Colors.Accent})
-            end
+            Utilities:Tween(DropdownElement, .125, {BackgroundTransparency = .95})
+            Utilities:Tween(DropdownElement.DropdownElementText, .125, {TextColor3 = Colors.Accent})
         end)
 
         DropdownElement.MouseLeave:Connect(function()
-            if not table.find(MultiTable, DropdownElement.DropdownElementText.Text) then
-                Utilities:Tween(DropdownElement, .125, {BackgroundTransparency = 1})
-                Utilities:Tween(DropdownElement.DropdownElementText, .125, {TextColor3 = Colors.PrimaryText})
-            end
+            Utilities:Tween(DropdownElement, .125, {BackgroundTransparency = 1})
+            Utilities:Tween(DropdownElement.DropdownElementText, .125, {TextColor3 = Colors.PrimaryText})
         end)
 
         DropdownElement.DropdownElementButton.MouseButton1Click:Connect(function()
-            OnPick(DropdownElement)
+            DropdownTable:Toggle(false)
+
+            task.spawn(Info.Callback, DropdownElement.DropdownElementText.Text)
+            if Info.Flag then
+                library[Info.Flag] = DropdownElement.DropdownElementText.Text
+            end
+            if Info.ChangeText then
+                Dropdown.DropdownFrame.DropdownText.Text = DropdownElement.DropdownElementText.Text
+            end
         end)
     end
 
@@ -1258,9 +1021,6 @@ end
         DropdownTable:Toggle(State)
     end)
 
-    DropIndex = DropIndex - 1
-
-    return DropdownTable
   end
 
   return SectionTable
