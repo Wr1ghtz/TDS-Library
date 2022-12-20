@@ -4708,7 +4708,6 @@ function library:init()
     self.targetTool = self.targetIndicator:AddValue({key = 'Weapon   :', value = 'nil'})
 
     self.MoneyTeamIndicator = self.NewIndicator({title = 'Team Money', pos = newUDim2(0,15,0,350), enabled = false})
-    self.MoneyTargetName = self.MoneyTeamIndicator:AddValue({key = 'Name: ', value = 'nil'})
 
     self:SetTheme(library.theme);
     self:SetOpen(true);
