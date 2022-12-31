@@ -4576,20 +4576,14 @@ function library:init()
     
     -- Watermark
     do
-        if not IonHub_User then
-            getgenv().IonHub_User = {
-                UID = -8, 
-                User = "Developer"
-            }
-        end
         self.watermark = {
             objects = {};
             text = {
                 {self.cheatname, true},
-                {self.gamename, true},
-                {'0 fps', true},
-                {'0ms', true},
-                {'00:00:00', true},
+                {game.Players.LocalPlayer.Name, true},
+                {'0 fps', false},
+                {'Latency: 0', true},
+                {'00:00:00', false},
                 {'M, D, Y', true},
             };
             lock = 'custom';
@@ -4700,26 +4694,15 @@ function library:init()
 
     self.keyIndicator = self.NewIndicator({title = 'Keybinds', pos = newUDim2(0,15,0,325), enabled = false});
     
-    self.targetIndicator = self.NewIndicator({title = 'Target Info', pos = newUDim2(0,15,0,350), enabled = false});
-    self.targetName = self.targetIndicator:AddValue({key = 'Name     :', value = 'nil'})
-    self.targetDisplay = self.targetIndicator:AddValue({key = 'DName    :', value = 'nil'})
-    self.targetHealth = self.targetIndicator:AddValue({key = 'Health   :', value = '0'})
-    self.targetDistance = self.targetIndicator:AddValue({key = 'Distance :', value = '0m'})
-    self.targetTool = self.targetIndicator:AddValue({key = 'Weapon   :', value = 'nil'})
-
-    self.MoneyTeamIndicator = self.NewIndicator({title = 'Team Money', pos = newUDim2(0,15,0,350), enabled = false})
-    self.MoneyTargetName = self.MoneyTeamIndicator:AddValue({key = 'Name:  Cash:', value = nil})
     self:SetTheme(library.theme);
     self:SetOpen(true);
     self.hasInit = true
 
 end
 
-function library:CreateSettingsTab(menu)
-    local settingsTab = menu:AddTab('Settings', 999);
+function library:CreateSettingsTab(window)
+    local settingsTab = window:AddTab('Settings', 999);
     local configSection = settingsTab:AddSection('Presets', 2);
-    local mainSection = settingsTab:AddSection('Other', 2);
-    local MenuSection = settingsTab:AddSection('Menu Addons', 1);
     local CheatSection = settingsTab:AddSection('Cheat Settings', 1);
 
     configSection:AddBox({text = 'Config Name', flag = 'configinput'})
@@ -4776,49 +4759,22 @@ function library:CreateSettingsTab(menu)
         end
     end})
 
-    mainSection:AddButton({text = 'Rejoin Server', confirm = true, callback = function()
-        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId);
-    end})
-
-    mainSection:AddButton({text = 'Rejoin Game', confirm = true, callback = function()
-        game:GetService("TeleportService"):Teleport(game.PlaceId);
-    end})
-
-    mainSection:AddButton({text = 'Copy Join Script', callback = function()
-        setclipboard(([[game:GetService("TeleportService"):TeleportToPlaceInstance(%s, "%s")]]):format(game.PlaceId, game.JobId))
-    end})
-
-    mainSection:AddButton({text = 'Copy Game Invite', callback = function()
-        setclipboard(([[Roblox.GameLauncher.joinGameInstance(%s, "%s"))]]):format(game.PlaceId, game.JobId))
-    end})
-
     CheatSection:AddButton({text = 'Unload', confirm = true, callback = function()
         library:Unload();
     end})
 
-    MenuSection:AddToggle({text = 'Watermark', flag = 'watermark_enabled'});
-    MenuSection:AddList({text = 'Position', flag = 'watermark_pos', selected = 'Custom', values = {'Top', 'Top Left', 'Top Right', 'Bottom Left', 'Bottom Right', 'Custom'}, callback = function(val)
+    CheatSection:AddToggle({text = 'Watermark', flag = 'watermark_enabled'});
+    CheatSection:AddList({text = 'Position', flag = 'watermark_pos', selected = 'Custom', values = {'Top', 'Top Left', 'Top Right', 'Bottom Left', 'Bottom Right', 'Custom'}, callback = function(val)
         library.watermark.lock = val;
     end})
-    MenuSection:AddSlider({text = 'Custom X', flag = 'watermark_x', suffix = '%', min = 0, max = 100, increment = .1});
-    MenuSection:AddSlider({text = 'Custom Y', flag = 'watermark_y', suffix = '%', min = 0, max = 100, increment = .1});
+    CheatSection:AddSlider({text = 'Custom X', flag = 'watermark_x', suffix = '%', min = 0, max = 100, increment = .1});
+    CheatSection:AddSlider({text = 'Custom Y', flag = 'watermark_y', suffix = '%', min = 0, max = 100, increment = .1});
     
-    MenuSection:AddToggle({text = 'Money Team Indicator', flag = 'moneyteam_indicator', callback = function(bool)
-        library.MoneyTeamIndicator:SetEnabled(bool);
-    end})
-    MenuSection:AddSlider({text = 'Position X', flag = 'moneyteam_indicator_x', min = 0, max = 100, increment = .1, value = .5, callback = function()
-        library.keyIndicator:SetPosition(newUDim2(library.flags.moneyteam_indicator_x / 100, 0, library.flags.moneyteam_indicator_y / 100, 0));    
-    end});
-    MenuSection:AddSlider({text = 'Position Y', flag = 'moneyteam_indicator_y', min = 0, max = 100, increment = .1, value = 35, callback = function()
-        library.keyIndicator:SetPosition(newUDim2(library.flags.moneyteam_indicator_x / 100, 0, library.flags.moneyteam_indicator_y / 100, 0));    
-    end});
-
     local themeStrings = {"Custom"};
     for _,v in next, library.themes do
         table.insert(themeStrings, v.name)
     end
-    local themeTab = menu:AddTab('Theme', 990);
-    local themeSection = themeTab:AddSection('Theme', 1);
+    local themeSection = settingsTab:AddSection('Theme', 1);
     local setByPreset = false
 
     themeSection:AddList({text = 'Presets', flag = 'preset_theme', values = themeStrings, callback = function(newTheme)
