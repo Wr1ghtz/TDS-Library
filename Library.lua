@@ -634,7 +634,7 @@ function library:init()
     function self:LoadConfig(name)
         local cfg = self:GetConfig(name)
         if not cfg then
-            self:SendNotification('Error loading config: Config does not exist. ('..tostring(name)..')', 5, c3new(1,0,0));
+            self:SendNotification('Error loading preset: Preset does not exist. ('..tostring(name)..')', 5, c3new(1,0,0));
             return
         end
 
@@ -663,15 +663,15 @@ function library:init()
         end)
 
         if s then
-            self:SendNotification('Successfully loaded config: '..name, 5, c3new(0,1,0));
+            self:SendNotification('Successfully loaded preset: '..name, 5, c3new(0,1,0));
         else
-            self:SendNotification('Error loading config: '..tostring(e)..'. ('..tostring(name)..')', 5, c3new(1,0,0));
+            self:SendNotification('Error loading preset: '..tostring(e)..'. ('..tostring(name)..')', 5, c3new(1,0,0));
         end
     end
 
     function self:SaveConfig(name)
         if not self:GetConfig(name) then
-            self:SendNotification('Error saving config: Config does not exist. ('..tostring(name)..')', 5, c3new(1,0,0));
+            self:SendNotification('Error saving preset: Preset does not exist. ('..tostring(name)..')', 5, c3new(1,0,0));
             return
         end
 
@@ -4581,6 +4581,7 @@ function library:init()
             text = {
                 {self.cheatname, true},
                 {game.Players.LocalPlayer.Name, true},
+                {self.gamename, false},
                 {'0 fps', false},
                 {'Latency: 0', true},
                 {'00:00:00', false},
@@ -4693,21 +4694,21 @@ function library:init()
     end)
 
     self.keyIndicator = self.NewIndicator({title = 'Keybinds', pos = newUDim2(0,15,0,325), enabled = false});
-    
+
     self:SetTheme(library.theme);
     self:SetOpen(true);
     self.hasInit = true
 
 end
 
-function library:CreateSettingsTab(window)
-    local settingsTab = window:AddTab('Settings', 999);
+function library:CreateSettingsTab(menu)
+    local settingsTab = menu:AddTab('Settings', 999);
     local configSection = settingsTab:AddSection('Presets', 2);
-    local CheatSection = settingsTab:AddSection('Cheat Settings', 2);
+    local mainSection = settingsTab:AddSection('Main', 2);
 
-    configSection:AddBox({text = 'Config Name', flag = 'configinput'})
-    configSection:AddList({text = 'Config', flag = 'selectedconfig'})
-    
+    configSection:AddBox({text = 'Preset Name', flag = 'configinput'})
+    configSection:AddList({text = 'Presets', flag = 'selectedconfig'})
+
     local function refreshConfigs()
         library.options.selectedconfig:ClearValues();
         for _,v in next, listfiles(self.cheatname..'/'..self.gamename..'/configs') do
@@ -4726,7 +4727,7 @@ function library:CreateSettingsTab(window)
 
     configSection:AddButton({text = 'Create', confirm = true, callback = function()
         if library:GetConfig(library.flags.configinput) then
-            library:SendNotification('Config \''..library.flags.configinput..'\' already exists.', 5, c3new(1,0,0));
+            library:SendNotification('Preset \''..library.flags.configinput..'\' already exists.', 5, c3new(1,0,0));
             return
         end
         writefile(self.cheatname..'/'..self.gamename..'/configs/'..library.flags.configinput.. self.fileext, http:JSONEncode({}));
@@ -4740,11 +4741,11 @@ function library:CreateSettingsTab(window)
 
     refreshConfigs()
 
-    CheatSection:AddBind({text = 'Open / Close', flag = 'togglebind', nomouse = true, noindicator = true, bind = Enum.KeyCode.End, callback = function()
+    mainSection:AddBind({text = 'Open / Close', flag = 'togglebind', nomouse = true, noindicator = true, bind = Enum.KeyCode.End, callback = function()
         library:SetOpen(not library.open)
     end});
 
-   CheatSection:AddToggle({text = 'Disable Movement If Open', flag = 'disablemenumovement', callback = function(bool)
+    mainSection:AddToggle({text = 'Disable Movement If Open', flag = 'disablemenumovement', callback = function(bool)
         if bool and library.open then
             actionservice:BindAction(
                 'FreezeMovement',
@@ -4759,21 +4760,23 @@ function library:CreateSettingsTab(window)
         end
     end})
 
-    CheatSection:AddButton({text = 'Unload', confirm = true, callback = function()
+    mainSection:AddButton({text = 'Unload', confirm = true, callback = function()
         library:Unload();
     end})
 
-    CheatSection:AddToggle({text = 'Watermark', flag = 'watermark_enabled'});
-    CheatSection:AddList({text = 'Position', flag = 'watermark_pos', selected = 'Custom', values = {'Top', 'Top Left', 'Top Right', 'Bottom Left', 'Bottom Right', 'Custom'}, callback = function(val)
+    mainSection:AddSeparator({text = 'Watermark'})
+    mainSection:AddToggle({text = 'Enabled', flag = 'watermark_enabled'});
+    mainSection:AddList({text = 'Position', flag = 'watermark_pos', selected = 'Custom', values = {'Top', 'Top Left', 'Top Right', 'Bottom Left', 'Bottom Right', 'Custom'}, callback = function(val)
         library.watermark.lock = val;
     end})
-    CheatSection:AddSlider({text = 'Custom X', flag = 'watermark_x', suffix = '%', min = 0, max = 100, increment = .1});
-    CheatSection:AddSlider({text = 'Custom Y', flag = 'watermark_y', suffix = '%', min = 0, max = 100, increment = .1});
-    
+    mainSection:AddSlider({text = 'Custom X', flag = 'watermark_x', suffix = '%', min = 0, max = 100, increment = .1});
+    mainSection:AddSlider({text = 'Custom Y', flag = 'watermark_y', suffix = '%', min = 0, max = 100, increment = .1});
+
     local themeStrings = {"Custom"};
     for _,v in next, library.themes do
         table.insert(themeStrings, v.name)
     end
+
     local themeSection = settingsTab:AddSection('Theme', 1);
     local setByPreset = false
 
