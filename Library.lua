@@ -4703,7 +4703,7 @@ end
 function library:CreateSettingsTab(window)
     local settingsTab = window:AddTab('Settings', 999);
     local configSection = settingsTab:AddSection('Presets', 2);
-    local CheatSection = settingsTab:AddSection('Cheat Settings', 1);
+    local CheatSection = settingsTab:AddSection('Cheat Settings', 2);
 
     configSection:AddBox({text = 'Config Name', flag = 'configinput'})
     configSection:AddList({text = 'Config', flag = 'selectedconfig'})
