@@ -4711,11 +4711,11 @@ end
 
 function library:CreateSettingsTab(menu)
     local settingsTab = menu:AddTab('Settings', 999);
-    local configSection = settingsTab:AddSection('Config', 2);
+    local configSection = settingsTab:AddSection('Preset System', 2);
     local mainSection = settingsTab:AddSection('Main', 2);
 
     configSection:AddBox({text = 'Preset Name', flag = 'configinput'})
-    configSection:AddList({text = 'Preset', flag = 'selectedconfig'})
+    configSection:AddList({text = 'Presets', flag = 'selectedconfig'})
 
     local function refreshConfigs()
         library.options.selectedconfig:ClearValues();
