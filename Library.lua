@@ -4719,7 +4719,7 @@ function library:CreateSettingsTab(menu)
 
     local function refreshConfigs()
         library.options.selectedconfig:ClearValues();
-        for _,v in next, listfiles(self.cheatname..'/'..self.gamename..'/configs') do
+        for _,v in next, listfiles(self.cheatname..'/'..self.gamename..'/presets') do
             local ext = '.'..v:split('.')[#v:split('.')];
             if ext == self.fileext then
                 library.options.selectedconfig:AddValue(v:split('\\')[#v:split('\\')]:sub(1,-#ext-1))
