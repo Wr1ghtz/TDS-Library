@@ -1,14 +1,7 @@
 --[[
-
     Library Made for https://octohook.xyz/
     Developed by liam#4567
     Modified by tatar0071#0627
-
-    Ik this code is really shit in some places lol
-    will rewrite again i was just using some rly old stuff that i was lazy to rewrite
-    could've been a lot better and more optimized in some places and some things arent done as they should've been
-    got lazy when trying to make disable all roblox input when ui is open sooo that will be added later =)
-
 ]]
 
 -- // Load
@@ -78,7 +71,7 @@ local library = {
     open = false;
     opening = false;
     hasInit = false;
-    cheatname = startupArgs.cheatname or 'octohook';
+    cheatname = startupArgs.cheatname or 'vizuality.club';
     gamename = startupArgs.gamename or 'universal';
     fileext = startupArgs.fileext or '.txt';
 }
@@ -87,7 +80,7 @@ library.themes = {
     {
         name = 'Default',
         theme = {
-            ['Accent']                    = fromrgb(255,135,255);
+            ['Accent']                    = fromrgb(255, 135, 255);
             ['Background']                = fromrgb(18,18,18);
             ['Border']                    = fromrgb(0,0,0);
             ['Border 1']                  = fromrgb(60,60,60);
@@ -616,7 +609,7 @@ function library:init()
     makefolder(self.cheatname)
     makefolder(self.cheatname..'/assets')
     makefolder(self.cheatname..'/'..self.gamename)
-    makefolder(self.cheatname..'/'..self.gamename..'/configs');
+    makefolder(self.cheatname..'/'..self.gamename..'/presets');
 
     function self:SetTheme(theme)
         for i,v in next, theme do
@@ -626,8 +619,8 @@ function library:init()
     end
 
     function self:GetConfig(name)
-        if isfile(self.cheatname..'/'..self.gamename..'/configs/'..name..self.fileext) then
-            return readfile(self.cheatname..'/'..self.gamename..'/configs/'..name..self.fileext);
+        if isfile(self.cheatname..'/'..self.gamename..'/presets/'..name..self.fileext) then
+            return readfile(self.cheatname..'/'..self.gamename..'/presets/'..name..self.fileext);
         end
     end
 
@@ -663,9 +656,9 @@ function library:init()
         end)
 
         if s then
-            self:SendNotification('Successfully loaded preset: '..name, 5, c3new(0,1,0));
+            self:SendNotification('Successfully loaded Preset: '..name, 5, c3new(0,1,0));
         else
-            self:SendNotification('Error loading preset: '..tostring(e)..'. ('..tostring(name)..')', 5, c3new(1,0,0));
+            self:SendNotification('Error loading Preset: '..tostring(e)..'. ('..tostring(name)..')', 5, c3new(1,0,0));
         end
     end
 
@@ -697,13 +690,13 @@ function library:init()
                     cfg[flag] = option.input
                 end
             end
-            writefile(self.cheatname..'/'..self.gamename..'/configs/'..name..self.fileext, http:JSONEncode(cfg));
+            writefile(self.cheatname..'/'..self.gamename..'/presets/'..name..self.fileext, http:JSONEncode(cfg));
         end)
 
         if s then
-            self:SendNotification('Successfully saved config: '..name, 5, c3new(0,1,0));
+            self:SendNotification('Successfully saved preset: '..name, 5, c3new(0,1,0));
         else
-            self:SendNotification('Error saving config: '..tostring(e)..'. ('..tostring(name)..')', 5, c3new(1,0,0));
+            self:SendNotification('Error saving preset: '..tostring(e)..'. ('..tostring(name)..')', 5, c3new(1,0,0));
         end
     end
 
@@ -2699,17 +2692,17 @@ function library:init()
                                         slider.focused = false;
                                         c:Disconnect();
                                     else
-                                        objs.text.Text = tostring(slider.value)..tostring(slider.suffix)..'/'..tostring(slider.max)..tostring(slider.suffix)..' []';
+                                        objs.text.Text = slider.text .. ": " .. string.format("%.14g", slider.value) .. tostring(slider.suffix);
                                         slider.focused = true;
                                         inputNumber = '';
                                         c = utility:Connection(inputservice.InputBegan, function(inp)
                                             if library.numberStrings[inp.KeyCode.Name] then
                                                 local number = library.numberStrings[inp.KeyCode.Name];
                                                 inputNumber = inputNumber..tostring(number);
-                                                objs.text.Text = string.format("%.14g", slider.value) .. tostring(slider.suffix) .. "/" .. slider.max .. tostring(slider.suffix) .. " [" .. inputNumber .. "]";
+						                        objs.text.Text = slider.text .. ": " .. string.format("%.14g", slider.value) .. tostring(slider.suffix);
                                             elseif inp.KeyCode == Enum.KeyCode.Backspace then
                                                 inputNumber = inputNumber:sub(1,-2);
-                                                objs.text.Text = string.format("%.14g", slider.value)..tostring(slider.suffix)..'/'..slider.max..tostring(slider.suffix)..' ['..inputNumber..']';
+                                                objs.text.Text = slider.text .. ": " .. string.format("%.14g", slider.value) .. tostring(slider.suffix);
                                             elseif inp.KeyCode == Enum.KeyCode.Return then
                                                 slider:SetValue(tonumber(inputNumber))
                                                 slider.focused = false;
@@ -4576,15 +4569,21 @@ function library:init()
     
     -- Watermark
     do
+        if not IonHub_User then
+            getgenv().IonHub_User = {
+                UID = 0, 
+                User = "admin"
+            }
+        end
         self.watermark = {
             objects = {};
             text = {
                 {self.cheatname, true},
-                {game.Players.LocalPlayer.Name, true},
-                {self.gamename, false},
-                {'0 fps', false},
-                {'Latency: 0', true},
-                {'00:00:00', false},
+                {("%s (uid %s)"):format(IonHub_User.User, tostring(IonHub_User.UID)), true},
+                {self.gamename, true},
+                {'0 fps', true},
+                {'0ms', true},
+                {'00:00:00', true},
                 {'M, D, Y', true},
             };
             lock = 'custom';
@@ -4600,7 +4599,7 @@ function library:init()
                 date[2] = date[2]..(daySuffix == 1 and 'st' or daySuffix == 2 and 'nd' or daySuffix == 3 and 'rd' or 'th')
 
                 self.text[4][1] = library.stats.fps..' fps'
-                self.text[5][1] = 'Latency: '..floor(library.stats.ping)
+                self.text[5][1] = floor(library.stats.ping)..'ms'
                 self.text[6][1] = os.date('%X', os.time())
                 self.text[7][1] = table.concat(date, ', ')
 
@@ -4695,6 +4694,15 @@ function library:init()
 
     self.keyIndicator = self.NewIndicator({title = 'Keybinds', pos = newUDim2(0,15,0,325), enabled = false});
 
+    --[[
+    self.targetIndicator = self.NewIndicator({title = 'Target Info', pos = newUDim2(0,15,0,350), enabled = false});
+    self.targetName = self.targetIndicator:AddValue({key = 'Name     :', value = 'nil'})
+    self.targetDisplay = self.targetIndicator:AddValue({key = 'DName    :', value = 'nil'})
+    self.targetHealth = self.targetIndicator:AddValue({key = 'Health   :', value = '0'})
+    self.targetDistance = self.targetIndicator:AddValue({key = 'Distance :', value = '0m'})
+    self.targetTool = self.targetIndicator:AddValue({key = 'Weapon   :', value = 'nil'})
+    ]]
+
     self:SetTheme(library.theme);
     self:SetOpen(true);
     self.hasInit = true
@@ -4703,11 +4711,11 @@ end
 
 function library:CreateSettingsTab(menu)
     local settingsTab = menu:AddTab('Settings', 999);
-    local configSection = settingsTab:AddSection('Presets', 2);
+    local configSection = settingsTab:AddSection('Config', 2);
     local mainSection = settingsTab:AddSection('Main', 2);
 
     configSection:AddBox({text = 'Preset Name', flag = 'configinput'})
-    configSection:AddList({text = 'Presets', flag = 'selectedconfig'})
+    configSection:AddList({text = 'Preset', flag = 'selectedconfig'})
 
     local function refreshConfigs()
         library.options.selectedconfig:ClearValues();
@@ -4730,11 +4738,11 @@ function library:CreateSettingsTab(menu)
             library:SendNotification('Preset \''..library.flags.configinput..'\' already exists.', 5, c3new(1,0,0));
             return
         end
-        writefile(self.cheatname..'/'..self.gamename..'/configs/'..library.flags.configinput.. self.fileext, http:JSONEncode({}));
+        writefile(self.cheatname..'/'..self.gamename..'/presets/'..library.flags.configinput.. self.fileext, http:JSONEncode({}));
         refreshConfigs()
     end}):AddButton({text = 'Delete', confirm = true, callback = function()
         if library:GetConfig(library.flags.selectedconfig) then
-            delfile(self.cheatname..'/'..self.gamename..'/configs/'..library.flags.selectedconfig.. self.fileext);
+            delfile(self.cheatname..'/'..self.gamename..'/presets/'..library.flags.selectedconfig.. self.fileext);
             refreshConfigs()
         end
     end})
