@@ -4569,21 +4569,16 @@ function library:init()
     
     -- Watermark
     do
-        if not IonHub_User then
-            getgenv().IonHub_User = {
-                UID = 0, 
-                User = "admin"
-            }
-        end
+
         self.watermark = {
             objects = {};
             text = {
                 {self.cheatname, true},
-                {("%s (uid %s)"):format(IonHub_User.User, tostring(IonHub_User.UID)), true},
-                {self.gamename, true},
-                {'0 fps', true},
-                {'0ms', true},
-                {'00:00:00', true},
+                {localplayer.Name, false},
+                {self.gamename, false},
+                {'0 fps', false},
+                {'Latency: 0ms', true},
+                {'00:00:00', false},
                 {'M, D, Y', true},
             };
             lock = 'custom';
@@ -4599,7 +4594,7 @@ function library:init()
                 date[2] = date[2]..(daySuffix == 1 and 'st' or daySuffix == 2 and 'nd' or daySuffix == 3 and 'rd' or 'th')
 
                 self.text[4][1] = library.stats.fps..' fps'
-                self.text[5][1] = floor(library.stats.ping)..'ms'
+                self.text[5][1] = 'Latency: '..floor(library.stats.ping)..'ms'
                 self.text[6][1] = os.date('%X', os.time())
                 self.text[7][1] = table.concat(date, ', ')
 
